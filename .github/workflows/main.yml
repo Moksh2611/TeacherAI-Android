@@ -22,6 +22,12 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Fix build.gradle namespace
+      working-directory: project
+      run: |
+        sed -i "s/android {/android {\n    namespace 'com.teacherai.app'/" app/build.gradle
+        cat app/build.gradle
+
     - name: Setup Gradle Wrapper
       working-directory: project
       run: |
@@ -46,3 +52,4 @@ jobs:
         name: TeacherAI-debug-apk
         path: project/app/build/outputs/apk/debug/app-debug.apk
         retention-days: 30
+
