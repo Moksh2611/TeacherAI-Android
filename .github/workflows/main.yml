@@ -26,16 +26,18 @@ jobs:
       working-directory: project
       run: |
         sed -i "s/android {/android {\n    namespace 'com.teacherai.app'/" app/build.gradle
-        cat app/build.gradle
+
+    - name: Fix styles.xml theme
+      working-directory: project
+      run: |
+        printf '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">\n        <item name="android:windowBackground">@color/bg_dark</item>\n        <item name="android:statusBarColor">@color/bg_dark</item>\n        <item name="android:navigationBarColor">@color/bg_dark</item>\n        <item name="android:windowLightStatusBar">false</item>\n    </style>\n</resources>' > app/src/main/res/values/styles.xml
 
     - name: Setup Gradle Wrapper
       working-directory: project
       run: |
         mkdir -p gradle/wrapper
-        curl -fsSL "https://github.com/gradle/gradle/raw/v8.4.0/gradle/wrapper/gradle-wrapper.jar" \
-             -o gradle/wrapper/gradle-wrapper.jar
-        curl -fsSL "https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradlew" \
-             -o gradlew
+        curl -fsSL "https://github.com/gradle/gradle/raw/v8.4.0/gradle/wrapper/gradle-wrapper.jar" -o gradle/wrapper/gradle-wrapper.jar
+        curl -fsSL "https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradlew" -o gradlew
         chmod +x gradlew
 
     - name: Create local.properties
