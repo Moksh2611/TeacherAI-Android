@@ -16,11 +16,13 @@ jobs:
     - name: Extract project ZIP
       run: |
         unzip -q TeacherAI-Final.zip -d project
-        SUBDIR=$(find . -maxdepth 1 -type d -name "TeacherAI*" | head -1)
-        if [ -n "$SUBDIR" ]; then
+        cd project
+        SUBDIR=$(find . -maxdepth 1 -type d ! -name "." | head -1)
+        if [ -n "$SUBDIR" ] && [ -f "$SUBDIR/app/build.gradle" ]; then
           cp -rn "$SUBDIR"/. .
           rm -rf "$SUBDIR"
         fi
+        ls -la
 
     - name: Set up Java
       uses: actions/setup-java@v4
@@ -29,14 +31,17 @@ jobs:
         distribution: 'temurin'
 
     - name: Fix build.gradle namespace
+      working-directory: project
       run: |
         sed -i "s/android {/android {\n    namespace 'com.teacherai.app'/" app/build.gradle
 
     - name: Fix styles.xml theme
+      working-directory: project
       run: |
         printf '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">\n        <item name="android:windowBackground">@color/bg_dark</item>\n        <item name="android:statusBarColor">@color/bg_dark</item>\n        <item name="android:navigationBarColor">@color/bg_dark</item>\n        <item name="android:windowLightStatusBar">false</item>\n    </style>\n</resources>' > app/src/main/res/values/styles.xml
 
     - name: Setup Gradle Wrapper
+      working-directory: project
       run: |
         mkdir -p gradle/wrapper
         printf 'distributionBase=GRADLE_USER_HOME\ndistributionPath=wrapper/dists\ndistributionUrl=https\\://services.gradle.org/distributions/gradle-8.4-bin.zip\nzipStoreBase=GRADLE_USER_HOME\nzipStorePath=wrapper/dists\n' > gradle/wrapper/gradle-wrapper.properties
@@ -45,14 +50,16 @@ jobs:
         chmod +x gradlew
 
     - name: Create local.properties
+      working-directory: project
       run: echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
 
     - name: Build APK
+      working-directory: project
       run: ./gradlew assembleDebug --no-daemon --stacktrace
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: TeacherAI-debug-apk
-        path: app/build/outputs/apk/debug/app-debug.apk
+        path: project/app/build/outputs/apk/debug/app-debug.apk
         retention-days: 30
